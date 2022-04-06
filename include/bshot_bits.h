@@ -33,11 +33,11 @@ public :
     pcl::PointCloud<pcl::Normal> cloud1_normals, cloud2_normals;
     pcl::PointCloud<pcl::PointXYZ> cloud1_keypoints, cloud2_keypoints;
 
+    // 描述子
     pcl::PointCloud<pcl::SHOT352> cloud1_shot, cloud2_shot;
-
     std::vector<bshot_descriptor> cloud1_bshot, cloud2_bshot;
 
-
+    // 计算法向量
     void calculate_normals ( float radius )
     {
         // Estimate the normals.
@@ -49,12 +49,11 @@ public :
 
         normalEstimation.setInputCloud(cloud1.makeShared());
         normalEstimation.compute(cloud1_normals);
-
         normalEstimation.setInputCloud(cloud2.makeShared());
         normalEstimation.compute(cloud2_normals);
     }
 
-
+    // 3D点云的体素下采样
     void  calculate_voxel_grid_keypoints ( float leaf_size )
     {
         // Find Keypoints on the input cloud
@@ -66,8 +65,6 @@ public :
 
         voxel_grid.setInputCloud(cloud2.makeShared());
         voxel_grid.filter(cloud2_keypoints);
-
-
     }
 
 
@@ -76,18 +73,19 @@ public :
 
         // SHOT estimation object.
         pcl::SHOTEstimationOMP<pcl::PointXYZ, pcl::Normal, pcl::SHOT352> shot;
+        
         shot.setRadiusSearch(radius);
-
         shot.setNumberOfThreads(12);
-
         pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
         shot.setSearchMethod(kdtree);
-
+        // 输入三样
         shot.setInputCloud(cloud1_keypoints.makeShared());
         shot.setSearchSurface(cloud1.makeShared());
         shot.setInputNormals(cloud1_normals.makeShared());
+        // 输出一样
         shot.compute(cloud1_shot);
 
+        
         shot.setInputCloud(cloud2_keypoints.makeShared());
         shot.setSearchSurface(cloud2.makeShared());
         shot.setInputNormals(cloud2_normals.makeShared());
